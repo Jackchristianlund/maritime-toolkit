@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maritime Ops Toolkit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --panel: #0f1628;
+    --panel2: #141d35;
+    --border: #1e2d50;
+    --accent: #00c8ff;
+    --accent2: #0066cc;
+    --warn: #ff9900;
+    --danger: #ff3344;
+    --ok: #00e676;
+    --text: #c8d8f0;
+    --muted: #4a6080;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,200,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,200,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 24px 60px; }
+
+  /* ── HEADER ── */
+  header {
+    padding: 40px 0 32px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .logo {
+    font-family: var(--sans);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 4px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  header h1 {
+    font-family: var(--sans);
+    font-size: clamp(22px, 4vw, 34px);
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.1;
+  }
+
+  header h1 span { color: var(--accent); }
+
+  .header-meta {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: right;
+  }
+
+  .status-dot {
+    display: inline-block;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--ok);
+    margin-right: 6px;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 28px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0;
+  }
+
+  .tab {
+    padding: 10px 20px;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.2s;
+  }
+
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ── PANEL ── */
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    background: var(--panel2);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .panel-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  .panel-body { padding: 20px; }
+
+  /* ── WEATHER ── */
+  .port-select-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  select {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 10px 16px;
+    border-radius: 3px;
+    cursor: pointer;
+    flex: 1;
+    min-width: 200px;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  select:focus { outline: none; border-color: var(--accent); }
+
+  .btn {
+    background: var(--accent2);
+    border: none;
+    color: #fff;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 10px 24px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+  }
+
+  .btn:hover { background: var(--accent); color: #000; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .weather-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .wx-card {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 16px;
+    transition: border-color 0.3s;
+  }
+
+  .wx-card.warn { border-color: var(--warn); }
+  .wx-card.danger { border-color: var(--danger); }
+  .wx-card.ok { border-color: var(--ok); }
+
+  .wx-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .wx-value {
+    font-family: var(--sans);
+    font-size: 28px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1;
+  }
+
+  .wx-unit { font-size: 13px; font-weight: 400; color: var(--muted); margin-left: 4px; }
+
+  .wx-status {
+    font-size: 10px;
+    margin-top: 8px;
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+
+  .wx-status.ok { color: var(--ok); }
+  .wx-status.warn { color: var(--warn); }
+  .wx-status.danger { color: var(--danger); }
+
+  .wx-note {
+    background: var(--panel2);
+    border-left: 3px solid var(--accent);
+    padding: 12px 16px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+    border-radius: 0 3px 3px 0;
+  }
+
+  .wx-note strong { color: var(--text); }
+
+  .loading {
+    text-align: center;
+    padding: 40px;
+    color: var(--muted);
+    font-size: 12px;
+    letter-spacing: 2px;
+  }
+
+  .spinner {
+    display: inline-block;
+    width: 16px; height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 10px;
+    vertical-align: middle;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Beaufort scale table */
+  .bft-row {
+    display: grid;
+    grid-template-columns: 40px 1fr 100px;
+    gap: 8px;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+  .bft-row:last-child { border-bottom: none; }
+  .bft-num { color: var(--accent); font-weight: 700; }
+  .bft-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .bft-fill { height: 100%; border-radius: 2px; transition: width 0.5s; }
+
+  /* ── FAULT TREE ── */
+  .fault-start {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .sys-btn {
+    padding: 12px 20px;
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex: 1;
+    min-width: 140px;
+    text-align: center;
+  }
+
+  .sys-btn:hover, .sys-btn.active { background: var(--accent2); border-color: var(--accent); color: #fff; }
+
+  .fault-trail {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .fault-step {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 20px;
+    animation: fadeSlide 0.3s ease;
+  }
+
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .step-num {
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .step-q {
+    font-family: var(--sans);
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 16px;
+    line-height: 1.4;
+  }
+
+  .step-detail {
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 16px;
+    line-height: 1.6;
+    border-left: 2px solid var(--border);
+    padding-left: 12px;
+  }
+
+  .choice-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .choice-btn {
+    padding: 9px 18px;
+    border-radius: 3px;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+
+  .choice-yes {
+    background: rgba(0,230,118,0.1);
+    border-color: var(--ok);
+    color: var(--ok);
+  }
+
+  .choice-yes:hover { background: var(--ok); color: #000; }
+
+  .choice-no {
+    background: rgba(255,51,68,0.1);
+    border-color: var(--danger);
+    color: var(--danger);
+  }
+
+  .choice-no:hover { background: var(--danger); color: #fff; }
+
+  .choice-unsure {
+    background: rgba(255,153,0,0.1);
+    border-color: var(--warn);
+    color: var(--warn);
+  }
+
+  .choice-unsure:hover { background: var(--warn); color: #000; }
+
+  .result-box {
+    background: var(--panel2);
+    border-radius: 3px;
+    padding: 20px 24px;
+    animation: fadeSlide 0.3s ease;
+  }
+
+  .result-box.result-ok { border: 1px solid var(--ok); }
+  .result-box.result-warn { border: 1px solid var(--warn); }
+  .result-box.result-danger { border: 1px solid var(--danger); }
+
+  .result-label {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .result-label.ok { color: var(--ok); }
+  .result-label.warn { color: var(--warn); }
+  .result-label.danger { color: var(--danger); }
+
+  .result-title {
+    font-family: var(--sans);
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 12px;
+  }
+
+  .result-steps {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .result-steps li {
+    font-size: 13px;
+    color: var(--text);
+    padding-left: 20px;
+    position: relative;
+    line-height: 1.5;
+  }
+
+  .result-steps li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--accent);
+  }
+
+  .reset-btn {
+    margin-top: 20px;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 8px 16px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .reset-btn:hover { border-color: var(--text); color: var(--text); }
+
+  /* ── ABOUT ── */
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  @media (max-width: 600px) {
+    .about-grid { grid-template-columns: 1fr; }
+    header { flex-direction: column; align-items: flex-start; }
+    .header-meta { text-align: left; }
+  }
+
+  .info-block {
+    background: var(--panel2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 20px;
+  }
+
+  .info-block h3 {
+    font-family: var(--sans);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .info-block p {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 12px;
+  }
+
+  .tag {
+    background: var(--border);
+    color: var(--text);
+    font-size: 10px;
+    letter-spacing: 1px;
+    padding: 4px 10px;
+    border-radius: 2px;
+    text-transform: uppercase;
+  }
+
+  .sys-info {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    line-height: 1.8;
+  }
+
+  .sys-info span { color: var(--accent); margin-right: 8px; }
+
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <div class="logo">Jack C. Lund — Portfolio</div>
+      <h1>Maritime Ops<br><span>Toolkit</span></h1>
+    </div>
+    <div class="header-meta">
+      <div><span class="status-dot"></span>Live Yr.no API</div>
+      <div style="margin-top:6px">Kongsberg Maritime — FSE Study Project</div>
+      <div style="margin-top:6px; font-size:10px;" id="ts"></div>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('weather')">⚓ Port Weather</button>
+    <button class="tab" onclick="showTab('fault')">🔧 Fault Diagnosis</button>
+    <button class="tab" onclick="showTab('about')">◎ About</button>
+  </div>
+
+  <!-- ══════════════════════ WEATHER TAB ══════════════════════ -->
+  <div id="tab-weather" class="tab-content active">
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Norwegian Port Conditions</span>
+        <span style="font-size:11px;color:var(--muted)">Data: Yr.no / MET Norway</span>
+      </div>
+      <div class="panel-body">
+        <div class="port-select-row">
+          <select id="portSelect">
+            <option value="59.9139,10.7522">Oslo (Oslofjord)</option>
+            <option value="60.3929,5.3241">Bergen</option>
+            <option value="63.4305,10.3951">Trondheim</option>
+            <option value="69.6492,18.9560">Tromsø</option>
+            <option value="58.9700,5.7331">Stavanger</option>
+            <option value="62.7263,7.0116">Ålesund</option>
+            <option value="59.2803,10.4078">Horten</option>
+          </select>
+          <button class="btn" onclick="fetchWeather()">FETCH CONDITIONS</button>
+        </div>
+
+        <div id="wx-output">
+          <div style="text-align:center;padding:40px;color:var(--muted);font-size:12px;letter-spacing:2px">
+            SELECT A PORT AND FETCH CONDITIONS
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Beaufort Reference -->
+    <div class="panel" style="margin-top:16px">
+      <div class="panel-header">
+        <span class="panel-title">Beaufort Wind Scale — Maritime Reference</span>
+      </div>
+      <div class="panel-body">
+        <div id="beaufort-table"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ FAULT TAB ══════════════════════ -->
+  <div id="tab-fault" class="tab-content">
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Onboard System Fault Diagnosis</span>
+        <span style="font-size:11px;color:var(--muted)">AMS / Kongsberg K-Chief methodology</span>
+      </div>
+      <div class="panel-body">
+        <p style="font-size:12px;color:var(--muted);margin-bottom:20px;line-height:1.6">
+          Structured fault isolation following K-Chief 600 diagnostic methodology.
+          Select the system showing abnormal behaviour:
+        </p>
+        <div class="fault-start">
+          <button class="sys-btn" onclick="startDiag('pump')">🔄 Pump Failure</button>
+          <button class="sys-btn" onclick="startDiag('valve')">⚙️ Valve Not Responding</button>
+          <button class="sys-btn" onclick="startDiag('alarm')">🔔 Spurious Alarm</button>
+        </div>
+        <div class="fault-trail" id="fault-trail"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ ABOUT TAB ══════════════════════ -->
+  <div id="tab-about" class="tab-content">
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">About This Project</span>
+      </div>
+      <div class="panel-body">
+        <div class="about-grid">
+          <div class="info-block">
+            <h3>Purpose</h3>
+            <p>Built as part of self-study preparation for a Field Service Engineer role at Kongsberg Maritime. Demonstrates interest in maritime automation systems (AMS/PMS) and practical application of web technologies to an operational domain.</p>
+            <div class="tag-row">
+              <span class="tag">K-Chief 600</span>
+              <span class="tag">AMS/PMS</span>
+              <span class="tag">Yr.no API</span>
+              <span class="tag">Fault Isolation</span>
+            </div>
+          </div>
+          <div class="info-block">
+            <h3>Systems Studied</h3>
+            <p>K-Chief 600 (AMS/PMS), Autochief 600 propulsion control, K-Steering ROR system, and Kongsberg's RAI/RAO/RDI/RDO I/O module architecture. Fault logic based on marine engineering diagnostic principles.</p>
+            <div class="tag-row">
+              <span class="tag">Vanilla JS</span>
+              <span class="tag">Fetch API</span>
+              <span class="tag">No dependencies</span>
+            </div>
+          </div>
+        </div>
+        <div class="sys-info">
+          <div><span>Author</span>Jack Christian Lund — IT Graduate, USN 2025</div>
+          <div><span>Contact</span>jackchristianlund@icloud.com</div>
+          <div><span>Weather API</span>api.met.no (MET Norway / Yr.no) — open, no key required</div>
+          <div><span>Source</span>github.com/Jackchristianlund</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── TIMESTAMP ──
+document.getElementById('ts').textContent = new Date().toUTCString().slice(0,25) + ' UTC';
+
+// ── TABS ──
+function showTab(id) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ── BEAUFORT TABLE ──
+const beaufort = [
+  {n:0, desc:'Calm', ms:'0–0.2', col:'#00e676'},
+  {n:1, desc:'Light air', ms:'0.3–1.5', col:'#00e676'},
+  {n:2, desc:'Light breeze', ms:'1.6–3.3', col:'#69f0ae'},
+  {n:3, desc:'Gentle breeze', ms:'3.4–5.4', col:'#b9f6ca'},
+  {n:4, desc:'Moderate breeze', ms:'5.5–7.9', col:'#fff176'},
+  {n:5, desc:'Fresh breeze', ms:'8.0–10.7', col:'#ffcc02'},
+  {n:6, desc:'Strong breeze', ms:'10.8–13.8', col:'#ff9900'},
+  {n:7, desc:'Near gale', ms:'13.9–17.1', col:'#ff6d00'},
+  {n:8, desc:'Gale', ms:'17.2–20.7', col:'#ff3344'},
+  {n:9, desc:'Strong gale', ms:'20.8–24.4', col:'#d50000'},
+  {n:10, desc:'Storm', ms:'24.5–28.4', col:'#9c27b0'},
+  {n:11, desc:'Violent storm', ms:'28.5–32.6', col:'#6a0080'},
+  {n:12, desc:'Hurricane', ms:'≥32.7', col:'#37002a'},
+];
+
+const bftEl = document.getElementById('beaufort-table');
+beaufort.forEach(b => {
+  const pct = Math.min((b.n / 12) * 100, 100);
+  bftEl.innerHTML += `<div class="bft-row">
+    <div class="bft-num">${b.n}</div>
+    <div>
+      <div style="font-size:12px;margin-bottom:4px">${b.desc} <span style="color:var(--muted);font-size:11px">${b.ms} m/s</span></div>
+      <div class="bft-bar"><div class="bft-fill" style="width:${pct}%;background:${b.col}"></div></div>
+    </div>
+    <div style="font-size:10px;color:var(--muted);text-align:right">${b.n <= 3 ? 'SAFE' : b.n <= 6 ? 'MONITOR' : b.n <= 8 ? 'CAUTION' : 'DANGER'}</div>
+  </div>`;
+});
+
+// ── WEATHER ──
+function msToBeaufort(ms) {
+  const limits = [0.3,1.6,3.4,5.5,8,10.8,13.9,17.2,20.8,24.5,28.5,32.7];
+  return limits.findIndex(l => ms < l) + (ms >= 32.7 ? 12 : 0);
+}
+
+function windStatus(ms) {
+  if (ms < 8) return {cls:'ok', label:'NORMAL OPS'};
+  if (ms < 14) return {cls:'warn', label:'MONITOR'};
+  return {cls:'danger', label:'RESTRICT OPS'};
+}
+
+function tempStatus(t) {
+  if (t >= 0) return {cls:'ok', label:'NORMAL'};
+  if (t >= -5) return {cls:'warn', label:'ICE RISK'};
+  return {cls:'danger', label:'SEVERE ICE RISK'};
+}
+
+async function fetchWeather() {
+  const [lat, lon] = document.getElementById('portSelect').value.split(',');
+  const portName = document.getElementById('portSelect').selectedOptions[0].text;
+  const out = document.getElementById('wx-output');
+  out.innerHTML = `<div class="loading"><span class="spinner"></span>FETCHING FROM YR.NO...</div>`;
+
+  try {
+    const r = await fetch(
+      `https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}`,
+      { headers: { 'User-Agent': 'maritimeopstoolkit/1.0 github.com/Jackchristianlund' } }
+    );
+    if (!r.ok) throw new Error('API error ' + r.status);
+    const data = await r.json();
+    const now = data.properties.timeseries[0].data.instant.details;
+    const next1h = data.properties.timeseries[0].data.next_1_hours;
+
+    const ws = now.wind_speed;
+    const wd = now.wind_from_direction;
+    const temp = now.air_temperature;
+    const pres = now.air_pressure_at_sea_level;
+    const humid = now.relative_humidity;
+    const bft = msToBeaufort(ws);
+    const wStat = windStatus(ws);
+    const tStat = tempStatus(temp);
+
+    const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
+    const dirStr = dirs[Math.round(wd / 22.5) % 16];
+
+    const condition = next1h ? next1h.summary.symbol_code.replace(/_/g,' ').toUpperCase() : 'N/A';
+
+    out.innerHTML = `
+      <div style="font-size:11px;color:var(--muted);margin-bottom:16px;letter-spacing:1px">
+        📍 ${portName} &nbsp;|&nbsp; ${new Date().toUTCString().slice(0,25)} UTC &nbsp;|&nbsp; ${condition}
+      </div>
+      <div class="weather-grid">
+        <div class="wx-card ${wStat.cls}">
+          <div class="wx-label">Wind Speed</div>
+          <div class="wx-value">${ws.toFixed(1)}<span class="wx-unit">m/s</span></div>
+          <div class="wx-label" style="margin-top:6px">Beaufort ${bft} — ${dirStr}</div>
+          <div class="wx-status ${wStat.cls}">${wStat.label}</div>
+        </div>
+        <div class="wx-card ${tStat.cls}">
+          <div class="wx-label">Air Temperature</div>
+          <div class="wx-value">${temp.toFixed(1)}<span class="wx-unit">°C</span></div>
+          <div class="wx-status ${tStat.cls}">${tStat.label}</div>
+        </div>
+        <div class="wx-card">
+          <div class="wx-label">Pressure</div>
+          <div class="wx-value">${Math.round(pres)}<span class="wx-unit">hPa</span></div>
+          <div class="wx-status ${pres < 990 ? 'danger' : pres < 1005 ? 'warn' : 'ok'}">${pres < 990 ? 'LOW — STORM RISK' : pres < 1005 ? 'FALLING' : 'STABLE'}</div>
+        </div>
+        <div class="wx-card">
+          <div class="wx-label">Humidity</div>
+          <div class="wx-value">${Math.round(humid)}<span class="wx-unit">%</span></div>
+          <div class="wx-status ok">NOMINAL</div>
+        </div>
+      </div>
+      <div class="wx-note">
+        <strong>Operational note:</strong> Wind ${ws.toFixed(1)} m/s (Bf ${bft}) from ${dirStr}.
+        ${ws >= 14 ? '⚠️ Conditions may restrict mooring and deck operations.' :
+          ws >= 8 ? '⚠️ Monitor conditions — wind approaching operational limits.' :
+          '✓ Conditions within normal operating parameters.'}
+        ${temp < 0 ? ' ❄️ Sub-zero temperatures — check for ice on deck and exposed equipment.' : ''}
+        ${pres < 990 ? ' ⚠️ Low pressure — deteriorating weather likely.' : ''}
+      </div>
+    `;
+  } catch(e) {
+    out.innerHTML = `<div style="color:var(--danger);padding:20px;font-size:13px">
+      Failed to fetch weather data. This may be due to CORS restrictions in some browsers.<br>
+      <span style="color:var(--muted);font-size:11px;margin-top:8px;display:block">
+      Try opening from a local server: <code>python3 -m http.server</code> or deploy to GitHub Pages.
+      </span></div>`;
+  }
+}
+
+// ── FAULT DIAGNOSIS ──
+const trees = {
+  pump: [
+    {
+      q: 'Is the pump alarm active in K-Chief 600?',
+      detail: 'Navigate to the Alarm List in K-Chief. Check for active alarms on the pump circuit — note the alarm code and timestamp.',
+      yes: 1, no: 'result-no-alarm'
+    },
+    {
+      q: 'Is there power available at the pump starter panel?',
+      detail: 'Check MCC (Motor Control Centre) for the pump. Verify incoming voltage with a multimeter at the starter terminals. Expected: 440V / 230V depending on pump rating.',
+      yes: 2, no: 'result-no-power'
+    },
+    {
+      q: 'Does the RDO module show an active start command?',
+      detail: 'In K-Chief I/O diagnostics, locate the Remote Digital Output assigned to this pump. Verify the output is energised (logic 1) when a start command is issued from the mimic panel.',
+      yes: 3, no: 'result-rdo-fault'
+    },
+    {
+      q: 'Are RAI sensor values (pressure/temperature) within normal range?',
+      detail: 'Check the Remote Analog Input readings for pump suction pressure and discharge pressure. Also verify bearing temperature if monitored. Compare against normal operating parameters.',
+      yes: 4, no: 'result-sensor-fault'
+    },
+    {
+      q: 'Can the pump be started manually via local panel?',
+      detail: 'Use the LOCAL/REMOTE selector on the starter panel to switch to LOCAL mode. Attempt to start the pump using the local pushbutton. This isolates a software fault from a mechanical/electrical fault.',
+      yes: 'result-software-fault', no: 'result-mechanical-fault'
+    }
+  ],
+  valve: [
+    {
+      q: 'Is there a position feedback discrepancy in K-Chief?',
+      detail: 'In K-Chief mimic, compare the commanded valve position with the feedback position shown. A mismatch indicates either a control signal issue or a position sensor fault.',
+      yes: 1, no: 'result-valve-comms'
+    },
+    {
+      q: 'Is the RAO analog output signal reaching the valve positioner?',
+      detail: 'Check the Remote Analog Output (4–20 mA signal) using a clamp meter at the cable termination on the valve actuator. A missing or incorrect signal points to the I/O module or wiring.',
+      yes: 2, no: 'result-rao-fault'
+    },
+    {
+      q: 'Does the RAI position feedback return a valid signal?',
+      detail: 'Verify the 4–20 mA position feedback from the valve positioner is correctly read by the Remote Analog Input module. Check for open circuit or signal out of range.',
+      yes: 3, no: 'result-rai-fault'
+    },
+    {
+      q: 'Can the valve be moved manually via the handwheel?',
+      detail: 'Most control valves have a manual override. Attempt to move the valve manually to confirm it is not mechanically seized, corroded, or hydraulically locked.',
+      yes: 'result-actuator-fault', no: 'result-valve-mechanical'
+    }
+  ],
+  alarm: [
+    {
+      q: 'Is the alarm repeating at regular intervals?',
+      detail: 'Note the alarm frequency in K-Chief Alarm History. Regular, patterned triggering often indicates a sensor oscillating around a setpoint threshold rather than a true process fault.',
+      yes: 1, no: 2
+    },
+    {
+      q: 'Is the process value close to the alarm setpoint?',
+      detail: 'Compare the live RAI value to the configured alarm limits. If the measured value is within 5–10% of the setpoint, the process may be genuinely running near limits.',
+      yes: 'result-setpoint-adjust', no: 'result-sensor-drift'
+    },
+    {
+      q: 'Has the alarm appeared after maintenance or equipment work?',
+      detail: 'Check the maintenance log. Recent work on sensors, wiring, or I/O modules is a common cause of new spurious alarms — connectors not fully seated, wires reversed, or configuration changed.',
+      yes: 'result-post-maintenance', no: 'result-wiring-check'
+    }
+  ]
+};
+
+const results = {
+  'result-no-alarm': {
+    type: 'ok', title: 'No Alarm Active — Monitor System',
+    steps: ['Verify process is operating normally by checking all RAI readings','Review alarm history for any recent transient alarms','Check if alarm was acknowledged and cleared by another operator','Consider increasing logging frequency for this circuit']
+  },
+  'result-no-power': {
+    type: 'danger', title: 'Power Supply Fault',
+    steps: ['Check circuit breaker in MCC — reset if tripped, investigate cause of trip','Verify fuse integrity on the motor starter','Check incoming supply from switchboard to MCC','Log fault and notify Chief Engineer if supply cannot be restored']
+  },
+  'result-rdo-fault': {
+    type: 'danger', title: 'RDO Module or Wiring Fault',
+    steps: ['Check RDO module status LED on Kongsberg I/O rack — red indicates fault','Verify 24V power supply to the I/O module','Inspect cable from RDO output to MCC control terminal for continuity','Swap RDO module with spare if available and retest','Document module serial number and fault for manufacturer report']
+  },
+  'result-sensor-fault': {
+    type: 'warn', title: 'Sensor Signal Out of Range',
+    steps: ['Identify which RAI sensor is reading abnormally (pressure/temperature)','Check sensor wiring for open circuit or short circuit','Verify correct mA range at RAI input terminals (normally 4–20 mA)','If pressure sensor: verify impulse line is not blocked or leaking','Replace sensor if wiring is confirmed intact and reading is still erroneous']
+  },
+  'result-software-fault': {
+    type: 'warn', title: 'Likely Software / Configuration Fault',
+    steps: ['Pump runs locally — fault is in automation system, not mechanical','Check K-Chief I/O configuration for this pump (tag, output assignment, logic)','Verify interlock conditions — is there a permissive that is not satisfied?','Review recent changes to K-Chief configuration or software','Contact Kongsberg technical support with event log if no configuration change found']
+  },
+  'result-mechanical-fault': {
+    type: 'danger', title: 'Mechanical or Electrical Fault at Pump',
+    steps: ['Pump does not run locally — isolate pump: switch off and lock out (LOTO)','Check motor windings with insulation tester (megger)','Inspect coupling between motor and pump for breakage','Check pump for seized impeller or cavitation damage','Arrange for mechanical repair — pump may need to be pulled']
+  },
+  'result-valve-comms': {
+    type: 'ok', title: 'No Feedback Discrepancy — Check Communication',
+    steps: ['Verify K-Chief is communicating with the relevant I/O node','Check network status LEDs on I/O cabinet','Ping the I/O node from the K-Chief operator station diagnostics','Review event log for any recent communication timeouts']
+  },
+  'result-rao-fault': {
+    type: 'danger', title: 'RAO Output Signal Missing',
+    steps: ['Check RAO module status in K-Chief I/O diagnostics','Measure mA output at module terminals with clamp meter','Inspect cable continuity from RAO to valve positioner terminals','Verify 24V loop power supply is present','Replace RAO module if output is confirmed missing with power present']
+  },
+  'result-rai-fault': {
+    type: 'warn', title: 'RAI Feedback Signal Fault',
+    steps: ['Measure mA signal from valve positioner at RAI input terminals','Check positioner feedback potentiometer or LVDT for damage','Verify positioner is correctly calibrated (0% = 4 mA, 100% = 20 mA)','Inspect cable from positioner to RAI module for damage or moisture ingress']
+  },
+  'result-actuator-fault': {
+    type: 'warn', title: 'Pneumatic or Electric Actuator Fault',
+    steps: ['Valve moves manually — actuator is the likely fault','For pneumatic actuator: check instrument air supply pressure (min 5.5 bar)','Check solenoid valve that controls actuator air — may be stuck','For electric actuator: check motor and gearbox inside actuator housing','Isolate and replace actuator if internal fault confirmed']
+  },
+  'result-valve-mechanical': {
+    type: 'danger', title: 'Valve Mechanically Seized',
+    steps: ['Valve cannot be moved manually — mechanical fault confirmed','Isolate the valve from the process (close upstream/downstream manual valves)','Allow valve body to cool if high temperature is a factor','Arrange for maintenance to disassemble and inspect valve body','Consider bypass arrangement while valve is out of service — notify Chief Engineer']
+  },
+  'result-setpoint-adjust': {
+    type: 'ok', title: 'Alarm Setpoint May Need Adjustment',
+    steps: ['Process value is near the alarm limit — this may be normal operating range','Consult system documentation for recommended setpoint range','If process has changed (new operating mode), adjust setpoint with authorisation','Document any setpoint changes in the maintenance log']
+  },
+  'result-sensor-drift': {
+    type: 'warn', title: 'Possible Sensor Drift or Noise',
+    steps: ['Compare sensor reading against local gauge or redundant sensor','Check for electrical noise on the signal cable (EMC screening intact?)','Apply a deadband/hysteresis filter in K-Chief if the system allows','If reading is consistently offset, recalibrate the sensor']
+  },
+  'result-post-maintenance': {
+    type: 'warn', title: 'Post-Maintenance Configuration Issue',
+    steps: ['Review exactly what work was carried out and by whom','Check all cable terminations in the affected I/O module — reseat connectors','Verify sensor range and engineering units match K-Chief configuration','If configuration was changed, restore previous settings from backup']
+  },
+  'result-wiring-check': {
+    type: 'warn', title: 'Check Wiring and I/O Module',
+    steps: ['Inspect terminal connections on the relevant I/O module','Check cable for chafing, moisture, or recent physical damage','Verify cable screen is grounded at one end only','Replace sensor on a trial basis if no wiring fault is found']
+  }
+};
+
+let currentTree = null;
+let stepIdx = 0;
+
+function startDiag(system) {
+  currentTree = system;
+  stepIdx = 0;
+  document.querySelectorAll('.sys-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  const trail = document.getElementById('fault-trail');
+  trail.innerHTML = '';
+  renderStep(0);
+}
+
+function renderStep(idx) {
+  const tree = trees[currentTree];
+  if (!tree || idx >= tree.length) return;
+  const step = tree[idx];
+  const trail = document.getElementById('fault-trail');
+  const div = document.createElement('div');
+  div.className = 'fault-step';
+  div.id = 'step-' + idx;
+  div.innerHTML = `
+    <div class="step-num">Step ${idx + 1} of ${tree.length}</div>
+    <div class="step-q">${step.q}</div>
+    <div class="step-detail">${step.detail}</div>
+    <div class="choice-row">
+      <button class="choice-btn choice-yes" onclick="answer('yes', ${idx})">✓ YES</button>
+      <button class="choice-btn choice-no" onclick="answer('no', ${idx})">✗ NO</button>
+    </div>
+  `;
+  trail.appendChild(div);
+  div.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function answer(choice, idx) {
+  const tree = trees[currentTree];
+  const step = tree[idx];
+  const stepEl = document.getElementById('step-' + idx);
+
+  // Disable buttons and mark answer
+  stepEl.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
+  const chosen = stepEl.querySelector('.choice-' + choice);
+  chosen.style.opacity = '1';
+  stepEl.querySelectorAll('.choice-btn:not(.choice-' + choice + ')').forEach(b => b.style.opacity = '0.3');
+
+  const next = choice === 'yes' ? step.yes : step.no;
+
+  if (typeof next === 'number') {
+    renderStep(next);
+  } else {
+    showResult(next);
+  }
+}
+
+function showResult(key) {
+  const r = results[key];
+  const trail = document.getElementById('fault-trail');
+  const div = document.createElement('div');
+  const typeMap = {ok:'ok', warn:'warn', danger:'danger'};
+  const labelMap = {ok:'✓ RESOLVED / LOW SEVERITY', warn:'⚠ ACTION REQUIRED', danger:'⛔ CRITICAL FAULT'};
+  div.className = `result-box result-${r.type}`;
+  div.innerHTML = `
+    <div class="result-label ${typeMap[r.type]}">${labelMap[r.type]}</div>
+    <div class="result-title">${r.title}</div>
+    <ul class="result-steps">
+      ${r.steps.map(s => `<li>${s}</li>`).join('')}
+    </ul>
+    <button class="reset-btn" onclick="resetDiag()">↺ START NEW DIAGNOSIS</button>
+  `;
+  trail.appendChild(div);
+  div.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function resetDiag() {
+  document.getElementById('fault-trail').innerHTML = '';
+  document.querySelectorAll('.sys-btn').forEach(b => b.classList.remove('active'));
+  currentTree = null;
+}
+</script>
+</body>
+</html>
